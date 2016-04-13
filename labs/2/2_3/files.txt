@@ -1,0 +1,1 @@
+file(GLOB LAB2_3_SRC "${CMAKE_SOURCE_DIR}/labs/2/2_3" "${CMAKE_SOURCE_DIR}/labs/2/2_3/*.c" ${CMAKE_SOURCE_DIR}/lib "${CMAKE_SOURCE_DIR}/lib/*.c")

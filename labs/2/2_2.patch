@@ -1,0 +1,59 @@
+--- 2_1/main_prog.c	2016-03-14 10:34:01.498772900 +0600
++++ 2_2/main_prog.c	2016-03-14 10:34:24.751897700 +0600
+@@ -16,11 +16,11 @@
+ 	uint16_t duration;
+ } Note;
+ 
+ #include "melody.h"
+ 
+-bool tick_started, tick_occured, melody_started, melody_played;
++bool tick_started, tick_occured, melody_started;
+ 
+ float tick_counter, melody_counter;
+ 
+ /*интервал между звуковыми тиками, длительность звукового тика*/
+ uint16_t tick_interval, tick_duration;
+@@ -41,12 +41,10 @@
+ 		play_sound(notes[note_index].freq);
+ 	}
+ }
+ 
+ void handler_func(){
+-	/*мелодия играет 1 раз*/
+-	if(!melody_played){
+ 		melody_counter++;
+ 		if(!melody_started){
+ 			if(melody_counter>=ticks_in_ms(ring_interval)){
+ 				melody_started=true;
+ 				melody_counter-=ticks_in_ms(ring_interval);
+@@ -63,17 +61,15 @@
+ 				melody_counter-=ticks_in_ms(notes[note_index].duration);			
+ 				note_index++;
+ 				if(note_index==num_notes){
+ 					stop_sound();
+ 					melody_started=false;
+-					melody_played=true;
+ 				} else {
+ 					play_note();
+ 				}
+ 			}	
+ 		}	
+-	}
+ 	/*даже если мелодия начала играть, тики все равно отсчитываются, но не звучат*/
+ 	tick_counter++;
+ 	if(tick_started){
+ 		if(tick_counter>=ticks_in_ms(tick_duration)){
+ 			tick_started=false;
+@@ -130,11 +126,11 @@
+ 	set_mode();
+ 
+ 	tick_duration=DEF_TICK_DURATION;
+ 
+ 	tick_counter=melody_counter=0;
+-	tick_started=tick_occured=melody_started=melody_played=false;
++	tick_started=tick_occured=melody_started=false;
+ 
+ 	print_color("Lab 2", YELLOW);
+ 	read_params();
+ 	//disable_int();
+ 	//outb(0x43, 0x36);

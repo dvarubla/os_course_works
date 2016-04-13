@@ -1,0 +1,40 @@
+--- 1_1/main_prog.c	2016-03-14 18:13:51.384019900 +0600
++++ 1_4/main_prog.c	2016-03-14 13:31:47.997244300 +0600
+@@ -15,10 +15,18 @@
+ /*адрес предыдущего обработчика прерывания*/
+ FullAddr addr;
+ bool show_menu,sound,shift_pressed,esc_pressed,ctrl_pressed;
+ uint32_t sound_freq, sound_delay;
+ 
++#define SPECIAL_DELAY_MULT 5
++/*Клавиши, для которых устанавливается большая задержка*/
++uint8_t special_scancodes[]={
++	/*Backspace, правый Shift, Enter*/
++	0x0E, 0x36, 0x1C
++};
++uint8_t special_scancodes_size=sizeof(special_scancodes)/sizeof(uint8_t);
++
+ void handler_func(){
+ 	uint8_t key=inb(0x60);
+ 	outb(0x64, 0xD2);
+ 	while(inb(0x64)&0b10);
+ 	outb(0x60, key);
+@@ -42,11 +50,17 @@
+ 			show_menu=true;
+ 		}
+ 	}
+ 	if(sound && pressed){
+ 		play_sound(sound_freq);
+-		wait(sound_delay);
++		bool is_special=false;		
++		for(uint8_t i=0; i<special_scancodes_size; i++){
++			if(cleared_key==special_scancodes[i]){
++				is_special=true;
++			}
++		}
++		wait((is_special)?sound_delay*SPECIAL_DELAY_MULT:sound_delay);
+ 		stop_sound();
+ 	}
+ 	call_int_addr(&addr);
+ }
+ 

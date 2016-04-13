@@ -1,0 +1,2 @@
+file(GLOB LAB5_1_SRC "${CMAKE_SOURCE_DIR}/labs/5/5_1" "${CMAKE_SOURCE_DIR}/labs/5/5_1/*.c" ${CMAKE_SOURCE_DIR}/lib "${CMAKE_SOURCE_DIR}/lib/*.c")
+list(REMOVE_ITEM LAB5_1_SRC "${CMAKE_SOURCE_DIR}/labs/5/5_1/main_prog_old.c") 

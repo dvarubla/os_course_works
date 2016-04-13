@@ -1,0 +1,68 @@
+--- 4_1/main_prog.c	2016-04-13 11:51:32.973994300 +0600
++++ 4_2/main_prog.c	2016-04-13 11:53:50.829257000 +0600
+@@ -59,12 +59,12 @@
+ void consumer();
+ void idle();
+ 
+ Thread threads[]={
+ 	{(uint32_t)idle, 0},
+-	{(uint32_t)producer, 0.5}, 
+-	{(uint32_t)consumer, 0.5}
++	{(uint32_t)producer, 0.99}, 
++	{(uint32_t)consumer, 0.01}
+ };
+ 
+ #define NUM_THREADS (sizeof(threads)/sizeof(Thread))
+ 
+ Sema 
+@@ -234,11 +234,10 @@
+ 	atomic_write(&skip_time_slice, true);
+ 	while(1);
+ }
+ 
+ void sleep_msec(uint32_t msec){
+-	//atomic_write(&skip_time_slice, true);
+ 	disable_int();
+ 	threads[cur_thread_id].sleep=SLEEPING|TIME_SLEEP;
+ 	threads[cur_thread_id].sleep_counter=msec*(1<<COUNTER_INCR)*TICKS_IN_S/MS_IN_S;
+ 	enable_int();
+ 	while(atomic_read(&threads[cur_thread_id].sleep) & SLEEPING);
+@@ -437,10 +436,12 @@
+ 	call_int_addr(&prev_int9_addr);
+ }
+ 
+ INTERRUPT_ROUTINE(9, int9_handler_func);
+ 
++#define PRIORITY_STR_LEN 20
++
+ void read_params(){
+ 	bool status;
+ 	uint32_t num32;
+ 	uint16_t num16;
+ 	print("\r\nEnter seed: ");
+@@ -475,10 +476,25 @@
+ 		max_time_slice=num16;
+ 	} else {
+ 		max_time_slice=DEF_MAX_TIME_SLICE;
+ 		print("Incorrect value. Max time slice set to "PASTE(DEF_MAX_TIME_SLICE)".\r\n");
+ 	}
++
++	float priorities[NUM_THREADS-1];
++	print("Enter 2 priorities: ");
++	status=read_numbers(&priorities, NUM_THREADS-1, PRIORITY_STR_LEN, FLOAT_ACT);
++	if(status){
++		for(uint8_t i=0; i<NUM_THREADS-1; i++){
++			threads[i+1].priority=priorities[i];
++		}
++	} else {
++		print("Incorrect values. Default priorities set to ");
++		for(uint8_t i=1; i<NUM_THREADS; i++){
++			printf("%.4f ", threads[i].priority);
++		}
++		print("\r\n");
++	}
+ 	print("Print enter: ");
+ 	get_key();
+ }
+ 
+ void main(){

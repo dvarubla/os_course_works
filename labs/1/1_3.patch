@@ -1,0 +1,37 @@
+--- 1_1/main_prog.c	2016-03-14 18:13:51.384019900 +0600
++++ 1_3/main_prog.c	2016-03-14 13:07:38.390737700 +0600
+@@ -10,10 +10,12 @@
+ #define RELEASED_FLAG 0x80
+ 
+ #define DEF_SOUND_FREQ 1500
+ #define DEF_SOUND_DELAY 50000
+ 
++#define RELEASED_FREQ_MULT 1.5
++
+ /*адрес предыдущего обработчика прерывания*/
+ FullAddr addr;
+ bool show_menu,sound,shift_pressed,esc_pressed,ctrl_pressed;
+ uint32_t sound_freq, sound_delay;
+ 
+@@ -40,14 +42,20 @@
+ 		if(ctrl_pressed && shift_pressed){
+ 			ctrl_pressed=shift_pressed=false;
+ 			show_menu=true;
+ 		}
+ 	}
+-	if(sound && pressed){
++	if(sound){
++		if(pressed){
+ 		play_sound(sound_freq);
+ 		wait(sound_delay);
+ 		stop_sound();
++		} else {
++			play_sound(sound_freq*RELEASED_FREQ_MULT);
++			wait(sound_delay);
++			stop_sound();
++		}
+ 	}
+ 	call_int_addr(&addr);
+ }
+ 
+ INTERRUPT_ROUTINE(9, handler_func);

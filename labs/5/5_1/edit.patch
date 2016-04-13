@@ -1,0 +1,15 @@
+--- main_prog_old.c	2016-03-02 23:39:49.000000000 +0600
++++ main_prog.c	2016-03-21 17:53:14.503243500 +0600
+@@ -110,11 +110,11 @@
+ #define ESC 0x01
+ 
+ void int9_handler_func(){
+ 	uint8_t key=inb(0x60);
+ 	bool pressed=((key&RELEASED_FLAG)==0);
+-	if(pressed && key==ENTER){
++	if(pressed){
+ 		if(rect_shown){
+ 			print_syms_for_rect(rect_x, rect_y);
+ 			rect_shown=false;
+ 		}
+ 	}

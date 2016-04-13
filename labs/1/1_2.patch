@@ -1,0 +1,80 @@
+--- 1_1/main_prog.c	2016-03-14 18:13:51.384019900 +0600
++++ 1_2/main_prog.c	2016-03-14 19:22:36.443555500 +0600
+@@ -9,21 +9,35 @@
+ #define ESC 0x01
+ #define RELEASED_FLAG 0x80
+ 
+ #define DEF_SOUND_FREQ 1500
+ #define DEF_SOUND_DELAY 50000
++/*число тиков, через которое происходит автонабор*/
++#define TYPEMATIC_TICKS 1
+ 
+ /*адрес предыдущего обработчика прерывания*/
+ FullAddr addr;
+ bool show_menu,sound,shift_pressed,esc_pressed,ctrl_pressed;
+ uint32_t sound_freq, sound_delay;
+ 
++uint32_t prev_time;
++/*посылает ли клавиатура при активации автонабора только
++скан-коды нажатых клавиш, или последовательно посылвет 
++скан-коды нажатия и отпускания клавиш
++*/
++bool good_keyboard;
++
++uint8_t prev_key;
+ void handler_func(){
+ 	uint8_t key=inb(0x60);
+ 	outb(0x64, 0xD2);
+ 	while(inb(0x64)&0b10);
+ 	outb(0x60, key);
++	uint32_t cur_time=get_time_ticks();
++	if(prev_key==key){
++		good_keyboard=true;
++	}
+ 	
+ 	uint8_t cleared_key=key;
+ 	bool pressed=((key&RELEASED_FLAG)==0);
+ 	if(!pressed){
+ 		cleared_key^=RELEASED_FLAG;
+@@ -40,15 +54,24 @@
+ 		if(ctrl_pressed && shift_pressed){
+ 			ctrl_pressed=shift_pressed=false;
+ 			show_menu=true;
+ 		}
+ 	}
+-	if(sound && pressed){
++	if(
++		sound && pressed && prev_key!=key && 
++		(good_keyboard || (cur_time-prev_time)>=TYPEMATIC_TICKS)
++	){		
+ 		play_sound(sound_freq);
+ 		wait(sound_delay);
+ 		stop_sound();
+ 	}
++
++	if(!pressed){
++		prev_time=cur_time;
++	}
++	prev_key=key;
++	
+ 	call_int_addr(&addr);
+ }
+ 
+ INTERRUPT_ROUTINE(9, handler_func);
+ 
+@@ -76,12 +99,15 @@
+ }
+ 
+ void main(){
+ 	set_mode();
+ 	sound=shift_pressed=esc_pressed=ctrl_pressed=false;
++	prev_key=0;
++	prev_time=0;
+ 
+ 	show_menu=true;
++	good_keyboard=false;
+ 	/*для теста, работает ли вообще pc speaker*/
+ 	play_sound(800);
+ 	wait(100000);
+ 	stop_sound();
+ 
