@@ -10,7 +10,8 @@ typedef struct Sema{
 	Spinlock lock;
 	int16_t counter;
 	uint16_t queue[MAX_QUEUE_SIZE];
-	uint16_t queue_size;
+	uint16_t queue_start;
+	uint16_t queue_end;
 } Sema;
 
 void sema_init(Sema *sema, int16_t counter);
